@@ -10,10 +10,13 @@ import UIKit
 open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
     
     open let imageView = UIImageView()
+    public let captionLabel = UILabel()
+    open var deleteDelegate: DeleteDelegate?
     open let image: InputSource
     open var gestureRecognizer: UITapGestureRecognizer?
     
     open let zoomEnabled: Bool
+    open let deleteEnabled: Bool
     open var zoomInInitially = false
     
     fileprivate var lastFrame = CGRect.zero
@@ -21,14 +24,24 @@ open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
     
     // MARK: - Life cycle
     
-    init(image: InputSource, zoomEnabled: Bool) {
+    init(image: InputSource, zoomEnabled: Bool, deleteEnabled: Bool) {
         self.zoomEnabled = zoomEnabled
+        self.deleteEnabled = deleteEnabled
         self.image = image
         
         super.init(frame: CGRect.null)
 
         imageView.clipsToBounds = true
         imageView.isUserInteractionEnabled = true
+        
+        captionLabel.numberOfLines = 0
+        captionLabel.font = UIFont.systemFont(ofSize: 13)
+        captionLabel.textColor = .red
+        captionLabel.text = "Apagar"
+        
+        captionLabel.isUserInteractionEnabled = true
+        let labelTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(deletePressed))
+        captionLabel.addGestureRecognizer(labelTapRecognizer)
         
         setPictoCenter()
         
@@ -37,6 +50,9 @@ open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
         showsVerticalScrollIndicator = false
         showsHorizontalScrollIndicator = false
         addSubview(imageView)
+        if deleteEnabled {
+            addSubview(captionLabel)
+        }
         minimumZoomScale = 1.0
         maximumZoomScale = calculateMaximumScale()
         
@@ -47,6 +63,12 @@ open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
         gestureRecognizer = tapRecognizer
     }
     
+    func deletePressed() {
+        if let delegate = deleteDelegate {
+            delegate.deletePressed(item: image.getId())
+        }
+    }
+    
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -54,8 +76,19 @@ open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
     override open func layoutSubviews() {
         super.layoutSubviews()
         
+        var imageViewSize = frame.size
+                var captionLabelFrame = CGRect()
+    
+                if deleteEnabled {
+                        let captionLabelHeight = ("Apagar" as NSString).boundingRect(with: CGSize(width: frame.size.width-32, height: 0), options: .usesLineFragmentOrigin, attributes: [NSFontAttributeName: captionLabel.font], context: nil).size.height+8
+                        imageViewSize = CGSize(width: imageViewSize.width, height: imageViewSize.height-captionLabelHeight)
+                        captionLabelFrame = CGRect(x: 8, y: imageViewSize.height, width: frame.size.width-32, height: captionLabelHeight)
+                    }
+        
+                captionLabel.frame = captionLabelFrame
+        
         if !zoomEnabled {
-            imageView.frame.size = frame.size;
+            imageView.frame.size = imageViewSize;
         } else if !isZoomed() {
             imageView.frame.size = calculatePictureSize()
             setPictoCenter()
@@ -113,7 +146,7 @@ open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
     }
     
     fileprivate func screenSize() -> CGSize {
-        return CGSize(width: frame.width, height: frame.height)
+        return CGSize(width: frame.width, height: frame.height-captionLabel.frame.size.height)
     }
     
     fileprivate func calculatePictureFrame() {
@@ -157,6 +190,7 @@ open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
     }
     
     fileprivate func setPictoCenter(){
+        
         var intendHorizon = (screenSize().width - imageView.frame.width ) / 2
         var intendVertical = (screenSize().height - imageView.frame.height ) / 2
         intendHorizon = intendHorizon > 0 ? intendHorizon : 0

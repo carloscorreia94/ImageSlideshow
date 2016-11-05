@@ -30,10 +30,24 @@ public enum ImagePreload {
     case all
 }
 
+public protocol DeleteDelegate {
+    func deletePressed(item: Int)
+}
+
+
 open class ImageSlideshow: UIView {
     
     open let scrollView = UIScrollView()
     open let pageControl = UIPageControl()
+    
+    public var deleteEnabled = false {
+                didSet {
+                        reloadScrollView()
+                        layoutScrollView()
+                    }
+            }
+    
+    public var deleteDelegate: DeleteDelegate?
     
     // MARK: - State properties
     
@@ -162,7 +176,7 @@ open class ImageSlideshow: UIView {
             pageControl.isHidden = false
         }
         pageControl.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: 10)
-        pageControl.center = CGPoint(x: frame.size.width / 2, y: frame.size.height - 12.0)
+        pageControl.center = CGPoint(x: frame.size.width / 2, y: frame.size.height - (self.deleteEnabled ? 42.0 : 12.0))
         
         layoutScrollView()
     }
@@ -193,7 +207,8 @@ open class ImageSlideshow: UIView {
         
         var i = 0
         for image in scrollViewImages {
-            let item = ImageSlideshowItem(image: image, zoomEnabled: self.zoomEnabled)
+            let item = ImageSlideshowItem(image: image, zoomEnabled: self.zoomEnabled,deleteEnabled: self.deleteEnabled)
+            item.deleteDelegate = deleteDelegate
             item.imageView.contentMode = self.contentScaleMode
             slideshowItems.append(item)
             scrollView.addSubview(item)

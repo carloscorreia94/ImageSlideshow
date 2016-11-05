@@ -11,15 +11,21 @@ import AlamofireImage
 
 public class AlamofireSource: NSObject, InputSource {
     var url: URL
-    
-    public init(url: URL) {
+    var imageID : Int
+    public init(url: URL, id: Int) {
         self.url = url
+        self.imageID = id
         super.init()
     }
+    
+    public func getId() -> Int {
+        return imageID
+    }
 
-    public init?(urlString: String) {
+    public init?(urlString: String, id: Int) {
         if let validUrl = URL(string: urlString) {
             self.url = validUrl
+            self.imageID = id
             super.init()
         } else {
             return nil
