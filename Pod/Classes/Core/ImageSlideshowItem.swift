@@ -10,7 +10,7 @@ import UIKit
 open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
     
     open let imageView = UIImageView()
-    public let captionLabel = UILabel()
+    public let captionLabel = UIImageView()
     open var deleteDelegate: DeleteDelegate?
     open let image: InputSource
     open var gestureRecognizer: UITapGestureRecognizer?
@@ -33,12 +33,7 @@ open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
 
         imageView.clipsToBounds = true
         imageView.isUserInteractionEnabled = true
-        
-        captionLabel.numberOfLines = 0
-        captionLabel.font = UIFont.systemFont(ofSize: 13)
-        captionLabel.textColor = .red
-        captionLabel.text = "Apagar"
-        
+                
         captionLabel.isUserInteractionEnabled = true
         let labelTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(deletePressed))
         captionLabel.addGestureRecognizer(labelTapRecognizer)
@@ -51,7 +46,9 @@ open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
         showsHorizontalScrollIndicator = false
         addSubview(imageView)
         if deleteEnabled {
-            addSubview(captionLabel)
+            captionLabel.image = UIImage(named: "Frameworks/ImageSlideshow.framework/ImageSlideshow.bundle/ic_delete_blue@2x")
+            imageView.addSubview(captionLabel)
+            imageView.bringSubview(toFront: captionLabel)
         }
         minimumZoomScale = 1.0
         maximumZoomScale = calculateMaximumScale()
@@ -77,15 +74,7 @@ open class ImageSlideshowItem: UIScrollView, UIScrollViewDelegate {
         super.layoutSubviews()
         
         var imageViewSize = frame.size
-                var captionLabelFrame = CGRect()
-    
-                if deleteEnabled {
-                        let captionLabelHeight = ("Apagar" as NSString).boundingRect(with: CGSize(width: frame.size.width-32, height: 0), options: .usesLineFragmentOrigin, attributes: [NSFontAttributeName: captionLabel.font], context: nil).size.height+8
-                        imageViewSize = CGSize(width: imageViewSize.width, height: imageViewSize.height-captionLabelHeight)
-                        captionLabelFrame = CGRect(x: 8, y: imageViewSize.height, width: frame.size.width-32, height: captionLabelHeight)
-                    }
-        
-                captionLabel.frame = captionLabelFrame
+        captionLabel.frame = CGRect(origin: imageView.frame.origin, size: CGSize(width: 30, height: 30))
         
         if !zoomEnabled {
             imageView.frame.size = imageViewSize;

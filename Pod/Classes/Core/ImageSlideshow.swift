@@ -176,7 +176,7 @@ open class ImageSlideshow: UIView {
             pageControl.isHidden = false
         }
         pageControl.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: 10)
-        pageControl.center = CGPoint(x: frame.size.width / 2, y: frame.size.height - (self.deleteEnabled ? 42.0 : 12.0))
+        pageControl.center = CGPoint(x: frame.size.width / 2, y: frame.size.height - 12.0)
         
         layoutScrollView()
     }
